@@ -1,7 +1,7 @@
 #utils/referral.py
 from database import get_user, increment_balance, update_user
 
-def process_referral(new_user_id: int, referrer_id: int) -> str:
+def handle_referral(new_user_id: int, referrer_id: int) -> str:
     if new_user_id == referrer_id:
         return "❌ You can't refer yourself."
 
