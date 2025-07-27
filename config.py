@@ -9,7 +9,7 @@ REQUIRED_CHANNELS = [
 ]
 
 # === Admin Telegram User ID ===
-ADMIN_ID = "5650788149"))
+ADMIN_ID = "5650788149"
 
 # === CAPTCHA Webhook API Secret or URL ===
 CAPTCHA_WEBAPP_URL = "https://catchdogs.vercel.app"
