@@ -4,7 +4,7 @@ from config import BOT_TOKEN, REQUIRED_CHANNELS
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
-def has_joined_all(user_id: int) -> bool:
+def check_user_joined(user_id: int) -> bool:
     for channel in REQUIRED_CHANNELS:
         try:
             member = bot.get_chat_member(channel, user_id)
