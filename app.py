@@ -24,11 +24,6 @@ last_error = None
 app = Flask(__name__)
 bot = telebot.TeleBot(config.BOT_TOKEN)
 
-# Global initialization at app startup
-start_background_tasks()
-setup_start_handlers(bot)
-manage_webhook()
-
 try:
     bot_info = bot.get_me()
     logger.info(f"Bot authorized as @{bot_info.username}")
@@ -122,7 +117,9 @@ def manage_webhook():
         logger.error(f"❌ Webhook setup failed: {last_error}")
         webhook_initialized = False
 
-# Initial setup
+# ✅ Now it's safe to run these:
+start_background_tasks()
+setup_start_handlers(bot)
 manage_webhook()
 
 @app.route('/debug')
