@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import telebot
 import config
+import logging
 from keepalive import start_background_tasks, ADMIN_ID, DB_PATH  # Added imports
 from database import create_user, is_blocked, block_user, get_user, update_user
 from utils.check_join import check_user_joined
@@ -11,6 +12,14 @@ from handlers.mainmenu_handler import handle_mainmenu
 from handlers.dashboard_handler import handle_dashboard
 from handlers.set_number_handler import handle_set_number
 from handlers.claim_handler import handle_claim
+
+# Initialize logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+# Global variables
+webhook_initialized = False
+last_error = None
 
 app = Flask(__name__)
 bot = telebot.TeleBot(config.BOT_TOKEN)
@@ -24,11 +33,20 @@ setup_start_handlers(bot)
 def start():
     return "Bot is live ✅"
 
+# === Webhook Security ===
 @app.route(f'/{config.BOT_TOKEN}', methods=['POST'])
 def webhook():
-    update = telebot.types.Update.de_json(request.stream.read().decode("utf-8"))
-    bot.process_new_updates([update])
-    return "ok", 200
+    if request.headers.get('X-Telegram-Bot-Api-Secret-Token') != config.WEBHOOK_SECRET:
+        logger.warning("⚠️ Unauthorized webhook access attempt")
+        return "Unauthorized", 403
+    
+    try:
+        update = telebot.types.Update.de_json(request.stream.read().decode("utf-8"))
+        bot.process_new_updates([update])
+        return "ok", 200
+    except Exception as e:
+        logger.error(f"Webhook processing failed: {e}")
+        return "error", 500
 
 # === CAPTCHA webhook route ===
 @app.route('/captcha_webhook', methods=['POST'])
@@ -61,6 +79,39 @@ def captcha_webhook():
             
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# === Single Webhook Manager ===
+def manage_webhook():
+    global webhook_initialized, last_error
+    try:
+        current = bot.get_webhook_info()
+        target = f"{config.WEBHOOK_URL}/{config.BOT_TOKEN}"
+        
+        if current.url != target:
+            bot.remove_webhook()
+            bot.set_webhook(
+                url=target,
+                allowed_updates=["message", "callback_query"],
+                secret_token=config.WEBHOOK_SECRET
+            )
+            logger.info("✅ Webhook configured")
+            webhook_initialized = True
+    except Exception as e:
+        last_error = str(e)
+        logger.error(f"❌ Webhook setup failed: {last_error}")
+        webhook_initialized = False
+
+# Initial setup
+manage_webhook()
+
+@app.route('/health')
+def health_check():
+    return jsonify({
+        "status": "running",
+        "webhook_set": webhook_initialized,
+        "last_error": last_error
+    })
 
 # === Telegram message handler ===
 @bot.message_handler(commands=['start'])
@@ -120,25 +171,6 @@ def claim_handler(message):
     if is_blocked(message.from_user.id):
         return
     handle_claim(bot, message)  # Pass the bot instance
-
-# === Set webhook when app starts (for Render) ===
-# Remove the @app.before_first_request decorator and replace with:
-
-webhook_initialized = False
-# Add error handling (recommended):
-@app.before_request
-def initialize_webhook():
-    global webhook_initialized
-    if not webhook_initialized:
-        try:
-            bot.remove_webhook()
-            bot.set_webhook(
-                url=f"{config.WEBHOOK_URL}/{config.BOT_TOKEN}",
-                allowed_updates=["message", "callback_query"]
-            )
-            webhook_initialized = True
-        except Exception as e:
-            app.logger.error(f"Webhook setup failed: {e}")
 
 if __name__ == '__main__':
     app.run(debug=True)

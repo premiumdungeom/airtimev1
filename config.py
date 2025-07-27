@@ -15,6 +15,8 @@ ADMIN_ID = "5650788149"
 CAPTCHA_WEBAPP_URL = "https://catchdogs.vercel.app"
 CAPTCHA_API_URL = "https://catchdogs.vercel.app/api/onWebhook"
 
+WEBHOOK_SECRET = "papa"
+
 CAPTCHA_API_KEY = "papa"  # Changed to "papa" as requested
 # === Airtime/Data withdrawal notification channel ===
 WITHDRAW_CHANNEL = "@combohamsterdailys"

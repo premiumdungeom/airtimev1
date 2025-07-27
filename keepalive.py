@@ -25,18 +25,15 @@ def ping_admin():
             log_activity(f"Ping failed: {e}")
 
 def backup_db():
-    while True:
-        try:
-            with open(DB_PATH, "rb") as db_file:
-                bot.send_document(
-                    ADMIN_ID, 
-                    db_file, 
-                    caption=f"🔄 DB Backup ({datetime.now().strftime('%Y-%m-%d %H:%M')})"
-                )
-            log_activity("DB backup sent")
-            time.sleep(1800)  # Every 30 minutes
-        except Exception as e:
-            log_activity(f"Backup failed: {e}")
+    try:
+        with open(DB_FILE, 'rb') as f:
+            bot.send_document(
+                ADMIN_ID, 
+                f, 
+                caption=f"DB Backup {datetime.now()}"
+            )
+    except Exception as e:
+        logger.error(f"Backup failed: {e}")
 
 def start_background_tasks():
     Thread(target=ping_admin, daemon=True).start()

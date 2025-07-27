@@ -1,6 +1,7 @@
 # database.py
 
 import json
+import config
 import os
 
 DB_FILE = 'users.json'
