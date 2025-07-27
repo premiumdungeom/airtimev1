@@ -22,7 +22,7 @@ WITHDRAW_CHANNEL = "@combohamsterdailys"
 # === Public bot link (for display in withdrawal message) ===
 BOT_LINK = "http://t.me/allinonerefbot"
 
-BOT_USERNAME "allinonerefbot"
+BOT_USERNAME = "allinonerefbot"
 
 # === Webhook URL for Render or production (used to register webhook) ===
 WEBHOOK_URL = "https://airtimev1.onrender.com"
