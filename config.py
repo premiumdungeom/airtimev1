@@ -5,11 +5,11 @@ BOT_TOKEN = "8286348410:AAGJLYonXlEekCg71lMjszIZgqOEQUbhm6Q"
 # === Channel Usernames to Check Join ===
 REQUIRED_CHANNELS = [
     "@combohamsterdailys",
-    "@pmdncha"
+    "@combohamsterdailys"
 ]
 
 # === Admin Telegram User ID ===
-ADMIN_ID = int(os.getenv("ADMIN_ID", "123456789"))
+ADMIN_ID = "5650788149"))
 
 # === CAPTCHA Webhook API Secret or URL ===
 CAPTCHA_WEBAPP_URL = "https://catchdogs.vercel.app"
@@ -20,10 +20,10 @@ CAPTCHA_API_KEY = "papa"  # Changed to "papa" as requested
 WITHDRAW_CHANNEL = "@combohamsterdailys"
 
 # === Public bot link (for display in withdrawal message) ===
-BOT_LINK = "https://t.me/YourBotUsername"
+BOT_LINK = "http://t.me/allinonerefbot"
 
 # === Webhook URL for Render or production (used to register webhook) ===
-WEBHOOK_URL = os.getenv("WEBHOOK_URL", "https://your-render-url.onrender.com")
+WEBHOOK_URL = "yy"
 
 # === Initial balance settings (optional) ===
 INITIAL_BALANCE = 0
