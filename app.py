@@ -107,7 +107,7 @@ def dash_handler(message):
 def set_number_prompt(message):
     if is_blocked(message.from_user.id):
         return
-    bot.send_message(message.chat.id, "📲 *SEND IN YOUR AIRTEL MOBILE NUMBER*", parse_mode="Markdown")
+    handle_set_number(bot, message)
 
 @bot.message_handler(func=lambda m: m.text and m.text.isdigit() and len(m.text) == 11)
 def set_number_process(message):
@@ -119,7 +119,7 @@ def set_number_process(message):
 def claim_handler(message):
     if is_blocked(message.from_user.id):
         return
-    handle_claim(bot, message)
+    handle_claim(bot, message)  # Pass the bot instance
 
 # === Set webhook when app starts (for Render) ===
 @app.before_first_request
