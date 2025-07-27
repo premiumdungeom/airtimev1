@@ -20,6 +20,10 @@ def get_user(user_id):
     db = load_db()
     return db.get(str(user_id))
 
+def get_user_ref_link(user_id):
+    """Generate referral link for user"""
+    return f"https://t.me/{config.BOT_USERNAME}?start={user_id}"
+
 def create_user(user_id, referrer_id=None):
     db = load_db()
     if str(user_id) not in db:
