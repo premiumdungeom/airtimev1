@@ -6,7 +6,7 @@ from database import create_user, is_blocked, block_user, get_user, update_user
 from utils.check_join import check_user_joined
 from utils.referral import handle_referral
 from utils.captcha_handler import process_captcha
-from handlers.start_handler import handle_start
+from handlers.start_handler import handle_start, setup_start_handlers
 from handlers.mainmenu_handler import handle_mainmenu
 from handlers.dashboard_handler import handle_dashboard
 from handlers.set_number_handler import handle_set_number
@@ -15,6 +15,9 @@ from handlers.claim_handler import handle_claim
 app = Flask(__name__)
 bot = telebot.TeleBot(config.BOT_TOKEN)
 start_background_tasks()  # Start keepalive system
+
+# Set up all handlers
+setup_start_handlers(bot)
 
 # === Webhook route for Telegram messages ===
 @app.route('/start', methods=['GET', 'POST'])
