@@ -1,6 +1,6 @@
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
 from config import REQUIRED_CHANNELS, CAPTCHA_WEBAPP_URL
-from utils.check_join import is_user_joined_all
+from utils.check_join import check_user_joined
 from telebot import TeleBot
 
 def send_welcome_screen(user_id):
@@ -25,7 +25,7 @@ def send_welcome_screen(user_id):
 def callback_check_joined(call):
     user_id = call.from_user.id
     
-    if not is_user_joined_all(user_id):
+    if not check_user_joined(user_id):
         bot.answer_callback_query(call.id, "❌ Join all channels first!")
         return
     
