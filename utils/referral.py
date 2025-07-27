@@ -1,5 +1,5 @@
 #utils/referral.py
-from database import get_user, update_user_balance, save_referral
+from database import get_user, increment_balance, update_user
 
 def process_referral(new_user_id: int, referrer_id: int) -> str:
     if new_user_id == referrer_id:
@@ -11,12 +11,10 @@ def process_referral(new_user_id: int, referrer_id: int) -> str:
 
     # Mark who referred this user
     new_user["referred_by"] = referrer_id
-    new_user["balance"] += 100  # Optional: Bonus for new user too?
-    save_referral(new_user_id, referrer_id)
+    new_user["balance"] += 100
+    update_user(new_user_id, referrer_id=referrer_id)
 
     # Update referrer’s balance
-    referrer = get_user(referrer_id)
-    referrer["balance"] += 100
-    update_user_balance(referrer_id, referrer["balance"])
+    increment_balance(referrer_id, 100)
 
     return "🎉 Referral bonus credited!"
