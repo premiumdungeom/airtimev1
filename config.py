@@ -9,7 +9,7 @@ REQUIRED_CHANNELS = [
 ]
 
 # === Admin Telegram User ID ===
-ADMIN_ID = "5650788149"))
+ADMIN_ID = "5650788149"
 
 # === CAPTCHA Webhook API Secret or URL ===
 CAPTCHA_WEBAPP_URL = "https://catchdogs.vercel.app"
@@ -23,7 +23,7 @@ WITHDRAW_CHANNEL = "@combohamsterdailys"
 BOT_LINK = "http://t.me/allinonerefbot"
 
 # === Webhook URL for Render or production (used to register webhook) ===
-WEBHOOK_URL = "yy"
+WEBHOOK_URL = "https://airtimev1.onrender.com"
 
 # === Initial balance settings (optional) ===
 INITIAL_BALANCE = 0
