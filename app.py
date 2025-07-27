@@ -23,20 +23,18 @@ last_error = None
 
 app = Flask(__name__)
 bot = telebot.TeleBot(config.BOT_TOKEN)
-start_background_tasks()  # Start keepalive system
 
-@app.before_first_request
-def verify_webhook_setup():
+@app.route('/init')
+def initialize_app():
+    global webhook_initialized
     try:
-        webhook_info = bot.get_webhook_info()
-        logger.info(f"Current webhook: {webhook_info.url}")
-        if not webhook_info.url:
-            manage_webhook()
+        start_background_tasks()
+        setup_start_handlers(bot)
+        manage_webhook()
+        return jsonify({"status": "initialized"})
     except Exception as e:
-        logger.error(f"Webhook verification failed: {e}")
-
-# Set up all handlers
-setup_start_handlers(bot)
+        logger.error(f"Initialization failed: {e}")
+        return jsonify({"error": str(e)}), 500
 
 # === Webhook route for Telegram messages ===
 @app.route('/start', methods=['GET', 'POST'])
@@ -183,4 +181,8 @@ def claim_handler(message):
     handle_claim(bot, message)  # Pass the bot instance
 
 if __name__ == '__main__':
+    # Manual initialization when running locally
+    start_background_tasks()
+    setup_start_handlers(bot)
+    manage_webhook()
     app.run(debug=True)
