@@ -24,6 +24,13 @@ last_error = None
 app = Flask(__name__)
 bot = telebot.TeleBot(config.BOT_TOKEN)
 
+try:
+    bot_info = bot.get_me()
+    logger.info(f"Bot authorized as @{bot_info.username}")
+except Exception as e:
+    logger.error(f"Bot auth failed: {e}")
+    raise  # Crash early if token invalid
+
 @app.route('/init')
 def initialize_app():
     global webhook_initialized
@@ -115,10 +122,14 @@ manage_webhook()
 
 @app.route('/debug')
 def debug():
-    return jsonify({
-        "webhook_info": bot.get_webhook_info().to_dict(),
-        "bot_info": bot.get_me().to_dict()
-    })
+    try:
+        return jsonify({
+            "bot_ready": bool(bot.get_me()),
+            "webhook_url": bot.get_webhook_info().url,
+            "pending_updates": bot.get_webhook_info().pending_update_count
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/health')
 def health_check():
