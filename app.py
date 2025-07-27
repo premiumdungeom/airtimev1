@@ -24,6 +24,11 @@ last_error = None
 app = Flask(__name__)
 bot = telebot.TeleBot(config.BOT_TOKEN)
 
+# Global initialization at app startup
+start_background_tasks()
+setup_start_handlers(bot)
+manage_webhook()
+
 try:
     bot_info = bot.get_me()
     logger.info(f"Bot authorized as @{bot_info.username}")
@@ -200,7 +205,4 @@ def claim_handler(message):
 
 if __name__ == '__main__':
     # Manual initialization when running locally
-    start_background_tasks()
-    setup_start_handlers(bot)
-    manage_webhook()
     app.run(debug=True)
