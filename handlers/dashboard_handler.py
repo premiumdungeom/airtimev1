@@ -1,12 +1,12 @@
 #handlers/dashboard_handler.py
 from telebot.types import Message
-from database import get_user_data, get_user_ref_link
+from database import get_user, get_user_ref_link
 from config import REF_BONUS_AMOUNT, REF_BONUS_MB
 import time
 
 def handle_dashboard(bot, message: Message):  # Changed to use passed bot instance
     user_id = message.chat.id
-    user_data = get_user_data(user_id)
+    user_data = get_user(user_id)
 
     # Fallback if user doesn't exist
     if not user_data:
