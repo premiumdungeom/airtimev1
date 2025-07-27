@@ -9,7 +9,7 @@ REQUIRED_CHANNELS = [
 ]
 
 # === Admin Telegram User ID ===
-ADMIN_ID = "5650788149"
+ADMIN_ID = "5650788149"))
 
 # === CAPTCHA Webhook API Secret or URL ===
 CAPTCHA_WEBAPP_URL = "https://catchdogs.vercel.app"
@@ -23,7 +23,7 @@ WITHDRAW_CHANNEL = "@combohamsterdailys"
 BOT_LINK = "http://t.me/allinonerefbot"
 
 # === Webhook URL for Render or production (used to register webhook) ===
-WEBHOOK_URL = "https://airtimev1.onrender.com"
+WEBHOOK_URL = "yy"
 
 # === Initial balance settings (optional) ===
 INITIAL_BALANCE = 0
@@ -32,5 +32,5 @@ INITIAL_BALANCE = 0
 REF_REWARD = 100  # Amount to give on successful referral (optional)
 
 # === Static asset paths ===
-FIRE_STICKER_PATH = "static/stickers/fire.webp"
+FIRE_STICKER_ID = "CAACAgIAAxkBAAEPBypohok5YcD3ZvhGCS0dkemMHpnlDwAC2xQAAiohoElIoiD7DUtpeDYE"
 WELCOME_IMAGE_PATH = "templates/welcome.jpg"
