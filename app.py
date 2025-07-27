@@ -113,6 +113,13 @@ def manage_webhook():
 # Initial setup
 manage_webhook()
 
+@app.route('/debug')
+def debug():
+    return jsonify({
+        "webhook_info": bot.get_webhook_info().to_dict(),
+        "bot_info": bot.get_me().to_dict()
+    })
+
 @app.route('/health')
 def health_check():
     return jsonify({
