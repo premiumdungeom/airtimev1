@@ -1,6 +1,6 @@
 #handlers/claim_handler.py
 from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from database import get_user, update_user_balance
+from database import get_user, increment_balance
 from config import BOT_TOKEN, CHANNEL_USERNAME  # Added CHANNEL_USERNAME to config
 import time
 
@@ -39,7 +39,7 @@ def process_claim(bot, message: Message, user, claim_type: str):  # Added bot pa
     number = user.get("number")
 
     # Deduct balance
-    update_user_balance(user_id, 0)
+    increment_balance(user_id, 0)
 
     # Send to channel
     text = (
