@@ -37,6 +37,16 @@ def create_user(user_id, referrer_id=None):
         }
         save_db(db)
 
+def update_user_number(user_id, number):
+    """Update only the user's phone number"""
+    db = load_db()
+    user_id = str(user_id)
+    if user_id in db:
+        db[user_id]["number"] = number
+        save_db(db)
+        return True
+    return False
+
 def update_user(user_id, **kwargs):
     db = load_db()
     user_id = str(user_id)
