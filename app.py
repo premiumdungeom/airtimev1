@@ -25,6 +25,16 @@ app = Flask(__name__)
 bot = telebot.TeleBot(config.BOT_TOKEN)
 start_background_tasks()  # Start keepalive system
 
+@app.before_first_request
+def verify_webhook_setup():
+    try:
+        webhook_info = bot.get_webhook_info()
+        logger.info(f"Current webhook: {webhook_info.url}")
+        if not webhook_info.url:
+            manage_webhook()
+    except Exception as e:
+        logger.error(f"Webhook verification failed: {e}")
+
 # Set up all handlers
 setup_start_handlers(bot)
 
