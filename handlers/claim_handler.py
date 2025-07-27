@@ -1,22 +1,17 @@
 #handlers/claim_handler.py
 from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from telebot import TeleBot
 from database import get_user, update_user_balance
-from config import BOT_TOKEN
+from config import BOT_TOKEN, CHANNEL_USERNAME  # Added CHANNEL_USERNAME to config
 import time
 
-bot = telebot.TeleBot(BOT_TOKEN)
-CHANNEL_USERNAME = "@combohamsterdailys"  # Update with your channel username
-
-
-@bot.message_handler(func=lambda m: m.text == "📤 Claim as Airtime" or m.text == "📶 Claim as Data")
-def handle_claim_type(message: Message):
+def handle_claim(bot, message: Message):  # Changed to use passed bot instance
     user = get_user(message.chat.id)
 
     if not user.get("number"):
         warn = bot.send_message(
             message.chat.id,
-            "📲 You haven't set a number yet.\nTap <b>✅ Set Number</b> to add your Airtel number."
+            "📲 You haven't set a number yet.\nTap <b>✅ Set Number</b> to add your Airtel number.",
+            parse_mode="HTML"
         )
         time.sleep(2)
         bot.delete_message(message.chat.id, warn.message_id)
@@ -25,17 +20,17 @@ def handle_claim_type(message: Message):
     if user.get("balance", 0) < 100:
         err = bot.send_message(
             message.chat.id,
-            "😓 You need at least ₦100 to claim."
+            "😓 You need at least ₦100 to claim.",
+            parse_mode="HTML"
         )
         time.sleep(2)
         bot.delete_message(message.chat.id, err.message_id)
         return
 
     claim_type = "airtime" if "Airtime" in message.text else "data"
-    process_claim(message, user, claim_type)
+    process_claim(bot, message, user, claim_type)  # Pass bot instance
 
-
-def process_claim(message: Message, user, claim_type: str):
+def process_claim(bot, message: Message, user, claim_type: str):  # Added bot parameter
     user_id = message.chat.id
     username = f"@{message.from_user.username}" if message.from_user.username else f"<code>{user_id}</code>"
 
@@ -57,13 +52,14 @@ def process_claim(message: Message, user, claim_type: str):
         f"🤖 <b>BOT:</b> <a href='https://t.me/{bot.get_me().username}'>Link</a>"
     )
 
-    bot.send_message(CHANNEL_USERNAME, text)
+    bot.send_message(CHANNEL_USERNAME, text, parse_mode="HTML")
 
     # Confirm to user
     confirm = bot.send_message(
         user_id,
         "✅ <b>Your claim has been submitted and is being processed!</b>\n"
-        "Expect delivery shortly."
+        "Expect delivery shortly.",
+        parse_mode="HTML"
     )
     time.sleep(2)
     bot.delete_message(user_id, confirm.message_id)

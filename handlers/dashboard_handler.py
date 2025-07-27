@@ -1,14 +1,10 @@
 #handlers/dashboard_handler.py
 from telebot.types import Message
-from telebot import TeleBot
 from database import get_user_data, get_user_ref_link
-from config import REF_BONUS_AMOUNT, REF_BONUS_MB, BOT_TOKEN
+from config import REF_BONUS_AMOUNT, REF_BONUS_MB
 import time
 
-bot = telebot.TeleBot(BOT_TOKEN)
-
-@bot.message_handler(func=lambda m: m.text == "👏 Dashboard")
-def handle_dashboard(message: Message):
+def handle_dashboard(bot, message: Message):  # Changed to use passed bot instance
     user_id = message.chat.id
     user_data = get_user_data(user_id)
 
@@ -30,7 +26,7 @@ def handle_dashboard(message: Message):
         f"🔗 <b>Invite Link:</b>\n<code>{ref_link}</code>"
     )
 
-    sent = bot.send_message(user_id, msg)
+    sent = bot.send_message(user_id, msg, parse_mode="HTML")
 
     # Auto-delete both dashboard and user's tap message
     time.sleep(2)

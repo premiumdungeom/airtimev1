@@ -1,13 +1,9 @@
 #handlers/mainmenu_handler.py
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, Message
-from telebot import TeleBot
-from config import FIRE_STICKER_ID, BOT_TOKEN
+from config import FIRE_STICKER_ID
 import time
 
-bot = telebot.TeleBot(BOT_TOKEN)
-
-@bot.message_handler(commands=['mainmenu'])
-def handle_mainmenu(message: Message):
+def handle_mainmenu(bot, message: Message):  # Add bot parameter
     user_id = message.chat.id
 
     # 🔥 Sticker
