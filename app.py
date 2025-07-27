@@ -122,13 +122,23 @@ def claim_handler(message):
     handle_claim(bot, message)  # Pass the bot instance
 
 # === Set webhook when app starts (for Render) ===
-@app.before_first_request
-def set_webhook():
-    bot.remove_webhook()
-    bot.set_webhook(
-        url=f"{config.WEBHOOK_URL}/{config.BOT_TOKEN}",
-        allowed_updates=["message", "callback_query"]
-    )
+# Remove the @app.before_first_request decorator and replace with:
+
+webhook_initialized = False
+# Add error handling (recommended):
+@app.before_request
+def initialize_webhook():
+    global webhook_initialized
+    if not webhook_initialized:
+        try:
+            bot.remove_webhook()
+            bot.set_webhook(
+                url=f"{config.WEBHOOK_URL}/{config.BOT_TOKEN}",
+                allowed_updates=["message", "callback_query"]
+            )
+            webhook_initialized = True
+        except Exception as e:
+            app.logger.error(f"Webhook setup failed: {e}")
 
 if __name__ == '__main__':
     app.run(debug=True)
