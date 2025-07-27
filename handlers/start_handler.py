@@ -21,8 +21,12 @@ def send_welcome_screen(bot, user_id):
         bot.send_photo(user_id, img, caption=welcome_text, reply_markup=keyboard)
 
 def handle_start(bot, message):
-    user_id = message.from_user.id
-    send_welcome_screen(bot, user_id)
+    try:
+        user_id = message.from_user.id
+        print(f"Received /start from {user_id}")  # Debug log
+        send_welcome_screen(bot, user_id)
+    except Exception as e:
+        print(f"Error in handle_start: {e}")
 
 def setup_start_handlers(bot):
     @bot.callback_query_handler(func=lambda call: call.data == "check_joined")
