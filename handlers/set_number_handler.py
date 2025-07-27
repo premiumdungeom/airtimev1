@@ -1,33 +1,27 @@
 #handlers/set_number_handler.py 
 from telebot.types import Message
-from telebot import TeleBot
 from database import update_user_number
-from config import BOT_TOKEN
 import re
 import time
 
-bot = telebot.TeleBot(BOT_TOKEN)
-
-# Step 1: Trigger by button
-@bot.message_handler(func=lambda m: m.text == "✅ Set Number")
-def ask_for_number(message: Message):
+def handle_set_number(bot, message: Message):  # Changed to use passed bot instance
     prompt = bot.send_message(
         message.chat.id,
         "📲 <b>Send in your <u>Airtel</u> mobile number:</b>\n\n"
-        "⚠️ Make sure it's 11 digits and Airtel ONLY!"
+        "⚠️ Make sure it's 11 digits and Airtel ONLY!",
+        parse_mode="HTML"
     )
-    bot.register_next_step_handler(prompt, handle_number_input)
+    bot.register_next_step_handler(prompt, lambda msg: handle_number_input(bot, msg))
 
-
-# Step 2: Handle and validate
-def handle_number_input(message: Message):
+def handle_number_input(bot, message: Message):  # Added bot parameter
     user_id = message.chat.id
     number = message.text.strip()
 
     if not number.isdigit() or len(number) != 11:
         err = bot.send_message(
             user_id,
-            "🥲 <b>Not a valid number</b>. Try again using <b>11 digits</b>."
+            "🥲 <b>Not a valid number</b>. Try again using <b>11 digits</b>.",
+            parse_mode="HTML"
         )
         time.sleep(2)
         bot.delete_message(user_id, err.message_id)
@@ -38,7 +32,8 @@ def handle_number_input(message: Message):
         warn = bot.send_message(
             user_id,
             "❌ <b>NOTE:</b> <u>Airtel numbers only</u> are allowed.\n\n"
-            "Please tap <b>✅ Set Number</b> again and resend a valid Airtel number."
+            "Please tap <b>✅ Set Number</b> again and resend a valid Airtel number.",
+            parse_mode="HTML"
         )
         time.sleep(2)
         bot.delete_message(user_id, warn.message_id)
@@ -50,7 +45,8 @@ def handle_number_input(message: Message):
 
     ok = bot.send_message(
         user_id,
-        f"✅ <b>Number saved successfully!</b>\n\n<b>Your Airtel Number:</b> <code>{number}</code>"
+        f"✅ <b>Number saved successfully!</b>\n\n<b>Your Airtel Number:</b> <code>{number}</code>",
+        parse_mode="HTML"
     )
 
     time.sleep(2)
