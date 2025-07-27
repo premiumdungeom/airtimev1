@@ -2,10 +2,11 @@
 from telebot.types import Message
 from telebot import TeleBot
 from database import update_user_number
+from config import BOT_TOKEN
 import re
 import time
 
-bot = TeleBot("YOUR_BOT_TOKEN", parse_mode="HTML")  # Or import bot from app.py
+bot = telebot.TeleBot(BOT_TOKEN)
 
 # Step 1: Trigger by button
 @bot.message_handler(func=lambda m: m.text == "✅ Set Number")

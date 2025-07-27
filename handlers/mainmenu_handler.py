@@ -1,10 +1,10 @@
 #handlers/mainmenu_handler.py
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, Message
 from telebot import TeleBot
-from config import FIRE_STICKER_ID
+from config import FIRE_STICKER_ID, BOT_TOKEN
 import time
 
-bot = TeleBot("YOUR_BOT_TOKEN", parse_mode="HTML")  # Or import from app.py
+bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=['mainmenu'])
 def handle_mainmenu(message: Message):

@@ -2,10 +2,10 @@
 from telebot.types import Message
 from telebot import TeleBot
 from database import get_user_data, get_user_ref_link
-from config import REF_BONUS_AMOUNT, REF_BONUS_MB
+from config import REF_BONUS_AMOUNT, REF_BONUS_MB, BOT_TOKEN
 import time
 
-bot = TeleBot("YOUR_BOT_TOKEN", parse_mode="HTML")  # Or import from app.py
+bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(func=lambda m: m.text == "👏 Dashboard")
 def handle_dashboard(message: Message):

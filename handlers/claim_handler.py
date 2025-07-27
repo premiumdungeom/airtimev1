@@ -2,9 +2,10 @@
 from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from telebot import TeleBot
 from database import get_user, update_user_balance
+from config import BOT_TOKEN
 import time
 
-bot = TeleBot("YOUR_BOT_TOKEN", parse_mode="HTML")
+bot = telebot.TeleBot(BOT_TOKEN)
 CHANNEL_USERNAME = "@combohamsterdailys"  # Update with your channel username
 
 
