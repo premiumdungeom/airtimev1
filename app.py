@@ -1,5 +1,6 @@
 import logging
 import os
+import asyncio
 from flask import Flask, request, jsonify
 
 from telegram import Update
@@ -66,14 +67,13 @@ def initialize_bot():
 
     # 4. Set webhook
     webhook_url = f"{config.WEBHOOK_URL}/{config.BOT_TOKEN}"
-    application.bot.set_webhook(
+    asyncio.run(application.bot.set_webhook(
         url=webhook_url,
         allowed_updates=["message", "callback_query"],
         secret_token=config.WEBHOOK_SECRET
-    )
+    ))
     logger.info("✅ Bot initialization complete")
 
-# Flask webhook endpoint
 @app.route(f'/{config.BOT_TOKEN}', methods=['POST'])
 def telegram_webhook():
     """Receive updates from Telegram and pass to PTB Application."""
@@ -90,12 +90,28 @@ def telegram_webhook():
         logger.error(f"Webhook processing failed: {e}")
         return "error", 500
 
-# Health endpoints
+def run_async(coro):
+    """
+    Utility to run async functions from Flask routes.
+    Compatible with most WSGI servers.
+    """
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+    if loop and loop.is_running():
+        # If already in an event loop (rare in Flask), use ensure_future
+        import nest_asyncio
+        nest_asyncio.apply()
+        return loop.run_until_complete(coro)
+    else:
+        return asyncio.run(coro)
+
 @app.route('/debug')
 def debug():
     try:
-        bot_info = application.bot.get_me()
-        webhook_info = application.bot.get_webhook_info()
+        bot_info = run_async(application.bot.get_me())
+        webhook_info = run_async(application.bot.get_webhook_info())
         return jsonify({
             "bot_ready": bool(bot_info),
             "webhook_url": webhook_info.url,
@@ -108,7 +124,7 @@ def debug():
 @app.route('/health')
 def health_check():
     try:
-        webhook_info = application.bot.get_webhook_info()
+        webhook_info = run_async(application.bot.get_webhook_info())
         return jsonify({
             "status": "running",
             "webhook_set": bool(webhook_info.url),
