@@ -82,6 +82,7 @@ def setup_start_handlers(bot):
     def start_wrapper(message):
         logger.info(f"Received /start from {message.from_user.id}")
         handle_start(bot, message)
+
     @bot.message_handler(func=lambda m: True)
     def echo_all(message):
         logger.info(f"[DEBUG] Got a message: {message.text} from {message.from_user.id}")
