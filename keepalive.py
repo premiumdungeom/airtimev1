@@ -1,16 +1,12 @@
 import os
-import time
 import logging
-from telebot import TeleBot
-from threading import Thread
+import asyncio
 from datetime import datetime
 import config
 
-# Initialize logging
 logger = logging.getLogger(__name__)
 
-bot = TeleBot(config.BOT_TOKEN)
-ADMIN_ID = config.ADMIN_ID  # Use from config
+ADMIN_ID = config.ADMIN_ID  # Should be an int
 DB_PATH = "users.json"
 LOG_FILE = "activity.log"
 
@@ -18,31 +14,37 @@ def log_activity(message: str):
     with open(LOG_FILE, "a") as f:
         f.write(f"[{datetime.now()}] {message}\n")
 
-def ping_admin():
+async def ping_admin_task(bot):
     while True:
         try:
-            bot.send_message(ADMIN_ID, "🫀 Bot heartbeat")
+            await bot.send_message(ADMIN_ID, "🫀 Bot heartbeat")
             log_activity("Sent keepalive ping")
-            time.sleep(300)  # Every 5 minutes
         except Exception as e:
             log_activity(f"Ping failed: {e}")
             logger.error(f"Ping failed: {e}")
+        await asyncio.sleep(300)  # Every 5 minutes
 
-def backup_db():
+async def backup_db_task(bot):
     while True:
         try:
             if os.path.exists(DB_PATH):
                 with open(DB_PATH, "rb") as db_file:
-                    bot.send_document(
+                    await bot.send_document(
                         ADMIN_ID, 
                         db_file, 
                         caption=f"🔄 DB Backup ({datetime.now().strftime('%Y-%m-%d %H:%M')})"
                     )
                 logger.info("DB backup sent")
-            time.sleep(1800)  # Every 30 minutes
         except Exception as e:
             logger.error(f"Backup failed: {e}")
+        await asyncio.sleep(1800)  # Every 30 minutes
 
-def start_background_tasks():
-    Thread(target=ping_admin, daemon=True).start()
-    Thread(target=backup_db, daemon=True).start()
+def start_background_tasks(application):
+    """
+    Start keepalive and backup tasks.
+    Call this after PTB Application is built and ready.
+    """
+    loop = asyncio.get_event_loop()
+    bot = application.bot
+    loop.create_task(ping_admin_task(bot))
+    loop.create_task(backup_db_task(bot))
