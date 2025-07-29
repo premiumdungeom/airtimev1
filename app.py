@@ -25,7 +25,7 @@ webhook_initialized = False
 last_error = None
 
 app = Flask(__name__)
-bot = telebot.TeleBot(config.BOT_TOKEN)
+bot = telebot.TeleBot(config.BOT_TOKEN, skip_pending=True, threaded=True)
 
 # Verify bot token works
 try:
