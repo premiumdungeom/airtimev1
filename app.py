@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify
 from telegram import Update
 from telegram.ext import (
     Application, ApplicationBuilder,
-    CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes, ConversationHandler
+    CommandHandler, CallbackQueryHandler, MessageHandler, filters, ConversationHandler
 )
 
 import config
@@ -21,6 +21,10 @@ from handlers.set_number_handler import handle_set_number, handle_number_input, 
 from handlers.dashboard_handler import handle_dashboard
 from handlers.claim_handler import handle_claim
 
+# If you use nest_asyncio, import and apply it:
+import nest_asyncio
+nest_asyncio.apply()
+
 # Logging setup
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -28,17 +32,13 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-# Flask app
 app = Flask(__name__)
-
-# Global state
 application: Application = None  # Will be set after building the PTB application
 
 def initialize_bot():
     global application
     logger.info("Initializing bot services...")
 
-    # 1. Build PTB application FIRST
     application = (
         ApplicationBuilder()
         .token(config.BOT_TOKEN)
@@ -46,15 +46,12 @@ def initialize_bot():
         .build()
     )
 
-    # 2. Start background tasks, passing in the application
     start_background_tasks(application)
 
-    # 3. Register handlers
     application.add_handler(CommandHandler("start", handle_start))
     application.add_handler(CallbackQueryHandler(callback_check_joined, pattern="^check_joined$"))
     application.add_handler(MessageHandler(filters.Regex("^👏 Dashboard$"), handle_dashboard))
     application.add_handler(MessageHandler(filters.Regex("^✅ Set Number$"), handle_set_number))
-    # Conversation for entering number
     application.add_handler(ConversationHandler(
         entry_points=[MessageHandler(filters.Regex("^✅ Set Number$"), handle_set_number)],
         states={ASK_NUMBER: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_number_input)]},
@@ -63,12 +60,11 @@ def initialize_bot():
     application.add_handler(MessageHandler(filters.Regex("^🏠 Main Menu$"), handle_mainmenu))
     application.add_handler(MessageHandler(filters.Regex("^📱 Claim as Airtime$"), handle_claim))
     application.add_handler(MessageHandler(filters.Regex("^📡 Claim as Data$"), handle_claim))
-    # Add more handlers as needed
 
-    # 4. Set webhook
-    webhook_url = f"{config.WEBHOOK_URL}/{config.BOT_TOKEN}"
-    asyncio.run(application.bot.set_webhook(
-        url=webhook_url,
+    # Set webhook ASYNC
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(application.bot.set_webhook(
+        url=f"{config.WEBHOOK_URL}/{config.BOT_TOKEN}",
         allowed_updates=["message", "callback_query"],
         secret_token=config.WEBHOOK_SECRET
     ))
@@ -76,14 +72,12 @@ def initialize_bot():
 
 @app.route(f'/{config.BOT_TOKEN}', methods=['POST'])
 def telegram_webhook():
-    """Receive updates from Telegram and pass to PTB Application."""
     if request.headers.get('X-Telegram-Bot-Api-Secret-Token') != config.WEBHOOK_SECRET:
         logger.warning("⚠️ Unauthorized webhook access attempt")
         return "Unauthorized", 403
-
     try:
-        update_json = request.get_data(as_text=True)
-        update = Update.de_json(update_json, application.bot)
+        update_dict = request.get_json(force=True)
+        update = Update.de_json(update_dict, application.bot)
         application.update_queue.put_nowait(update)
         return "ok", 200
     except Exception as e:
@@ -91,21 +85,15 @@ def telegram_webhook():
         return "error", 500
 
 def run_async(coro):
-    """
-    Utility to run async functions from Flask routes.
-    Compatible with most WSGI servers.
-    """
     try:
-        loop = asyncio.get_running_loop()
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
     except RuntimeError:
-        loop = None
-    if loop and loop.is_running():
-        # If already in an event loop (rare in Flask), use ensure_future
-        import nest_asyncio
-        nest_asyncio.apply()
-        return loop.run_until_complete(coro)
-    else:
-        return asyncio.run(coro)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    return loop.run_until_complete(coro)
 
 @app.route('/debug')
 def debug():
@@ -141,19 +129,13 @@ def start():
 def captcha_webhook():
     if request.headers.get('X-API-KEY') != config.CAPTCHA_API_KEY:
         return jsonify({"error": "Invalid key"}), 403
-        
-    data = request.get_json()
-    # For security, you may want to check request.remote_addr
-    # if request.remote_addr not in ["76.76.21.21", "::1"]:
-    #     return jsonify({"error": "Invalid source"}), 403
 
+    data = request.get_json()
     try:
         user_id = data.get('user_id')
         captcha_result = data.get('result')
         if not user_id or not captcha_result:
             return jsonify({"error": "Missing data"}), 400
-
-        # process_captcha must be adapted to PTB async if you want to await it
         bot = application.bot
         success = process_captcha(bot, data)
         return jsonify({
@@ -163,7 +145,6 @@ def captcha_webhook():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Start everything
 initialize_bot()
 
 if __name__ == '__main__':
