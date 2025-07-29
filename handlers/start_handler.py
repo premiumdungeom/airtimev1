@@ -78,8 +78,8 @@ def setup_start_handlers(bot):
     """
     @bot.message_handler(commands=['start'])
     def start_wrapper(message):
-    logger.info(f"Received /start from {message.from_user.id}")
-    handle_start(bot, message)
+        lgger.info(f"Received /start from {message.from_user.id}")
+        handle_start(bot, message)
 
     @bot.callback_query_handler(func=lambda call: call.data == "check_joined")
     def callback_check_joined(call):
