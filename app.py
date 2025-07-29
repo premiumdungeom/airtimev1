@@ -17,8 +17,8 @@ from utils.captcha_handler import process_captcha
 from handlers.start_handler import handle_start, callback_check_joined
 from handlers.mainmenu_handler import handle_mainmenu, build_main_menu_keyboard
 from handlers.set_number_handler import handle_set_number, handle_number_input, ASK_NUMBER
-# from handlers.dashboard_handler import handle_dashboard  # Uncomment when implemented
-# from handlers.claim_handler import handle_claim         # Uncomment when implemented
+from handlers.dashboard_handler import handle_dashboard  # Uncomment when implemented
+from handlers.claim_handler import handle_claim         # Uncomment when implemented
 
 # Logging setup
 logger = logging.getLogger(__name__)
@@ -152,5 +152,5 @@ initialize_bot()
 import os
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))  # Default to 10000 if not set
+    port = 10000
     app.run(host='0.0.0.0', port=port)
