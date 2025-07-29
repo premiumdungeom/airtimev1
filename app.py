@@ -65,6 +65,8 @@ def init_endpoint():
 # Webhook endpoint
 @app.route(f'/{config.BOT_TOKEN}', methods=['POST'])
 def webhook():
+        logger.info("Webhook endpoint received an update")
+    handle_start(bot, message)
     if request.headers.get('X-Telegram-Bot-Api-Secret-Token') != config.WEBHOOK_SECRET:
         logger.warning("⚠️ Unauthorized webhook access attempt")
         return "Unauthorized", 403
