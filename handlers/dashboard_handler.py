@@ -1,16 +1,16 @@
-#handlers/dashboard_handler.py
-from telebot.types import Message
+from telegram import Update
+from telegram.ext import ContextTypes
 from database import get_user, get_user_ref_link
 from config import REF_BONUS_AMOUNT, REF_BONUS_MB
-import time
+import asyncio
 
-def handle_dashboard(bot, message: Message):  # Changed to use passed bot instance
-    user_id = message.chat.id
+async def handle_dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_chat.id
     user_data = get_user(user_id)
 
     # Fallback if user doesn't exist
     if not user_data:
-        bot.send_message(user_id, "👤 User not found. Please /start first.")
+        await context.bot.send_message(user_id, "👤 User not found. Please /start first.")
         return
 
     balance_naira = user_data.get("balance_naira", 0)
@@ -26,9 +26,9 @@ def handle_dashboard(bot, message: Message):  # Changed to use passed bot instan
         f"🔗 <b>Invite Link:</b>\n<code>{ref_link}</code>"
     )
 
-    sent = bot.send_message(user_id, msg, parse_mode="HTML")
+    sent = await context.bot.send_message(user_id, msg, parse_mode="HTML")
 
     # Auto-delete both dashboard and user's tap message
-    time.sleep(2)
-    bot.delete_message(user_id, sent.message_id)
-    bot.delete_message(user_id, message.message_id)
+    await asyncio.sleep(2)
+    await context.bot.delete_message(user_id, sent.message_id)
+    await context.bot.delete_message(user_id, update.message.message_id)
