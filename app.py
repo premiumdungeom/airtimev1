@@ -17,8 +17,8 @@ from utils.captcha_handler import process_captcha
 from handlers.start_handler import handle_start, callback_check_joined
 from handlers.mainmenu_handler import handle_mainmenu, build_main_menu_keyboard
 from handlers.set_number_handler import handle_set_number, handle_number_input, ASK_NUMBER
-from handlers.dashboard_handler import handle_dashboard  # Uncomment when implemented
-from handlers.claim_handler import handle_claim         # Uncomment when implemented
+from handlers.dashboard_handler import handle_dashboard
+from handlers.claim_handler import handle_claim
 
 # Logging setup
 logger = logging.getLogger(__name__)
@@ -33,15 +33,11 @@ app = Flask(__name__)
 # Global state
 application: Application = None  # Will be set after building the PTB application
 
-# Initialize everything
 def initialize_bot():
     global application
     logger.info("Initializing bot services...")
 
-    # 1. Start background tasks
-    start_background_tasks()
-
-    # 2. Build PTB application
+    # 1. Build PTB application FIRST
     application = (
         ApplicationBuilder()
         .token(config.BOT_TOKEN)
@@ -49,19 +45,24 @@ def initialize_bot():
         .build()
     )
 
+    # 2. Start background tasks, passing in the application
+    start_background_tasks(application)
+
     # 3. Register handlers
     application.add_handler(CommandHandler("start", handle_start))
     application.add_handler(CallbackQueryHandler(callback_check_joined, pattern="^check_joined$"))
-    application.add_handler(MessageHandler(filters.Regex("^👏 Dashboard$"), handle_mainmenu))
+    application.add_handler(MessageHandler(filters.Regex("^👏 Dashboard$"), handle_dashboard))
     application.add_handler(MessageHandler(filters.Regex("^✅ Set Number$"), handle_set_number))
+    # Conversation for entering number
     application.add_handler(ConversationHandler(
         entry_points=[MessageHandler(filters.Regex("^✅ Set Number$"), handle_set_number)],
         states={ASK_NUMBER: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_number_input)]},
         fallbacks=[],
     ))
-    # application.add_handler(MessageHandler(filters.Regex("^📱 Claim as Airtime$"), handle_claim))      # Uncomment when implemented
-    # application.add_handler(MessageHandler(filters.Regex("^📡 Claim as Data$"), handle_claim))         # Uncomment when implemented
-    # application.add_handler(MessageHandler(filters.Regex("^👏 Dashboard$"), handle_dashboard))         # Uncomment when implemented
+    application.add_handler(MessageHandler(filters.Regex("^🏠 Main Menu$"), handle_mainmenu))
+    application.add_handler(MessageHandler(filters.Regex("^📱 Claim as Airtime$"), handle_claim))
+    application.add_handler(MessageHandler(filters.Regex("^📡 Claim as Data$"), handle_claim))
+    # Add more handlers as needed
 
     # 4. Set webhook
     webhook_url = f"{config.WEBHOOK_URL}/{config.BOT_TOKEN}"
@@ -122,12 +123,13 @@ def start():
 
 @app.route('/captcha_webhook', methods=['POST'])
 def captcha_webhook():
-    if request.headers.get('X-API-KEY') != "papa":
+    if request.headers.get('X-API-KEY') != config.CAPTCHA_API_KEY:
         return jsonify({"error": "Invalid key"}), 403
         
     data = request.get_json()
-    if request.remote_addr not in ["76.76.21.21", "::1"]:
-        return jsonify({"error": "Invalid source"}), 403
+    # For security, you may want to check request.remote_addr
+    # if request.remote_addr not in ["76.76.21.21", "::1"]:
+    #     return jsonify({"error": "Invalid source"}), 403
 
     try:
         user_id = data.get('user_id')
@@ -136,7 +138,6 @@ def captcha_webhook():
             return jsonify({"error": "Missing data"}), 400
 
         # process_captcha must be adapted to PTB async if you want to await it
-        from telegram.ext import ExtBot
         bot = application.bot
         success = process_captcha(bot, data)
         return jsonify({
@@ -148,8 +149,6 @@ def captcha_webhook():
 
 # Start everything
 initialize_bot()
-
-import os
 
 if __name__ == '__main__':
     port = 10000
