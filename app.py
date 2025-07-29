@@ -55,19 +55,17 @@ def initialize_bot():
         raise
 
 @app.route(f'/{config.BOT_TOKEN}', methods=['POST'])
-def webhook():
-    logger.info("Webhook endpoint received an update")
-    if request.headers.get('X-Telegram-Bot-Api-Secret-Token') != config.WEBHOOK_SECRET:
-        logger.warning("⚠️ Unauthorized webhook access attempt")
-        return "Unauthorized", 403
-
-    try:
-        update = telebot.types.Update.de_json(request.stream.read().decode("utf-8"))
-        bot.process_new_updates([update])
-        return "ok", 200
-    except Exception as e:
-        logger.error(f"Webhook processing failed: {e}")
-        return "error", 500
+   def webhook():
+       logger.info("Webhook endpoint received an update")
+       try:
+           update_json = request.stream.read().decode("utf-8")
+           logger.info(f"Raw update: {update_json}")
+           update = telebot.types.Update.de_json(update_json)
+           bot.process_new_updates([update])
+           return "ok", 200
+       except Exception as e:
+           logger.error(f"Webhook processing failed: {e}")
+           return "error", 500
 
 # Webhook management
 def manage_webhook():
